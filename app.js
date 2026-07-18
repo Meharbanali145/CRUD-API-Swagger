@@ -61,6 +61,27 @@ app.get("/tasks/:id", (req, res) => {
   return res.status(200).json({ task });
 });
 
+app.post("/tasks", (req, res) => {
+  if (!req.body.title) {
+    return res.status(400).json({
+      msg: "Title is missing",
+    });
+  }
+
+  const newTask = {
+    id: tasks.length ? tasks[tasks.length - 1].id + 1 : 1,
+    title: req.body.title,
+    done: req.body.done || false,
+  };
+
+  tasks.push(newTask);
+
+  return res.status(201).json({
+    msg: "Task Created",
+    newTask,
+  });
+});
+
 app.listen(3000, () => {
     console.log("Server running at http://localhost:3000");
 });

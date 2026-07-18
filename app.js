@@ -82,6 +82,56 @@ app.post("/tasks", (req, res) => {
   });
 });
 
+app.put("/tasks/:id", (req, res) => {
+  const taskIndex = tasks.findIndex(
+    (t) => t.id === parseInt(req.params.id)
+  );
+
+  if (taskIndex === -1) {
+    return res.status(404).json({
+      msg: `Task id ${req.params.id} not found`,
+    });
+  }
+
+  if (req.body.title === undefined) {
+    return res.status(400).json({
+      msg: "title is missing",
+    });
+  }
+
+  if (req.body.done === undefined) {
+    return res.status(400).json({
+      msg: "done is missing",
+    });
+  }
+
+  tasks[taskIndex].title = req.body.title;
+  tasks[taskIndex].done = req.body.done;
+
+  return res.status(200).json({
+    UpdateTask: tasks[taskIndex],
+  });
+});
+
+app.delete("/tasks/:id", (req, res) => {
+  const deleteTask = tasks.findIndex(
+    (d) => d.id === parseInt(req.params.id)
+  );
+
+  if (deleteTask === -1) {
+    return res.status(404).json({
+      msg: `Unknown id ${req.params.id}`,
+    });
+  }
+
+  tasks.splice(deleteTask, 1);
+
+  return res.status(200).json({
+    msg: `Task having id ${req.params.id} has deleted`,
+    tasks,
+  });
+});
+
 app.listen(3000, () => {
     console.log("Server running at http://localhost:3000");
 });

@@ -21,8 +21,13 @@ function getTaskById(id){
     return stmt.get(id);   
 }
 
+function createTask(title) {
+  const info = db.prepare('INSERT INTO tasks (title, done) VALUES (?, ?)').run(title, 0);
+  return { id: info.lastInsertRowid, title, done: 0 };
+}
 
 module.exports = {
   getAllTasks,
-  getTaskById
+  getTaskById,
+  createTask
 };

@@ -26,8 +26,21 @@ function createTask(title) {
   return { id: info.lastInsertRowid, title, done: 0 };
 }
 
+function updateTask(id, title, done) {
+  db.prepare('UPDATE tasks SET title = ?, done = ? WHERE id = ?')
+    .run(title, done ? 1 : 0, id);
+  return getTaskById(id);
+}
+
+function deleteTask(id) {
+  const info = db.prepare('DELETE FROM tasks WHERE id = ?').run(id);
+  return info.changes > 0; // true if a row was actually deleted
+}
+
 module.exports = {
   getAllTasks,
   getTaskById,
-  createTask
+  createTask,
+  updateTask,
+  deleteTask
 };

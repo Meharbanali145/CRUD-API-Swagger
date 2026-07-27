@@ -1,10 +1,7 @@
 const express = require('express');
 const db = require('../db/db');
-
 const app = express();
-
 app.use(express.json());
-
 
 const count = db.prepare('SELECT COUNT(*) AS count FROM tasks').get().count;
 if (count === 0) {
@@ -15,10 +12,17 @@ if (count === 0) {
 }
 
 function getAllTasks() {
-  const stmt = db.prepare('SELECT * FROM tasks');
+  const stmt =db.prepare('SELECT * FROM tasks');
   return stmt.all();
-}       
+} 
+
+function getTaskById(id){
+    const stmt  =db.prepare('SELECT * FROM tasks WHERE id = ?');
+    return stmt.get(id);   
+}
+
 
 module.exports = {
   getAllTasks,
+  getTaskById
 };

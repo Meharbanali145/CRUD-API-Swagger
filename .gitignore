@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 node_modules/
-=======
-node_module/
+.env
 tasks.db
->>>>>>> master
 tasks.db-journal

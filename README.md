@@ -73,7 +73,7 @@ docker exec -it taskdb psql -U postgres -d tasks -c "\dt"
 docker exec -it taskdb psql -U postgres -d tasks -c "SELECT * FROM tasks;"
 ```
 
-![Database contents](./screenshots/db-postgres.png)
+![Database contents](./screenshots/db-postgress.png)
 
 ## Persistence
 

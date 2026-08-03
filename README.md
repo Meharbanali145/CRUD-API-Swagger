@@ -1,52 +1,95 @@
-# CRUD API — Connected to SQLite Database
+# Task CRUD API — Containerized with Postgres
 
-A task management REST API that started as an in-memory CRUD API (Assignment 1) 
-and now persists all data to a real SQLite database (Assignment 2, Week 3).
+A task management REST API that has evolved through three storage backends:
+in-memory (A1) → SQLite file (A2) → a real PostgreSQL database running in
+Docker (A3, this version). The API itself hasn't changed — only what's
+underneath it.
 
-## Why SQLite?
+## What this is
 
-- **Single file** — the entire database is one file (`tasks.db`). No separate 
-  database server to install, configure, or run.
-- **Zero setup** — Node's built-in `node:sqlite` module ships with Node.js itself.
-- **Survives restarts** — data written to `tasks.db` lives on disk, unlike the 
-  in-memory array from Assignment 1.
+An Express-based CRUD API for managing tasks, backed by PostgreSQL. Both the
+app and the database run in Docker containers, started together with a
+single command via Docker Compose.
 
-## Where the database lives
+## Run it — one command
 
-- `tasks.db` is created automatically the first time the app runs.
-- It's git-ignored, so every fresh clone starts with no database file — the 
-  app creates it, creates the `tasks` table, and seeds three example tasks 
-  automatically on first run.
+```bash
+git clone https://github.com/Meharbanali145/CRUD-API-Swagger.git
+cd CRUD-API-Swagger
+cp .env.example .env
+docker compose up
+```
 
-## How to run
+That's it — no manual Postgres install, no manual `npm install` on your
+host, no separate steps. The API will be available at
+`http://localhost:3000`.
 
-npm install
-node server.js
+## Environment variables
 
-Server runs on `http://localhost:3000`.
+Copy `.env.example` to `.env` before running. It contains one variable:
+
+```
+DATABASE_URL=postgres://postgres:dev@db:5432/tasks
+```
+
+This points at the `db` service defined in `compose.yaml` — you don't need
+to change it unless you're running the database outside of Docker Compose.
 
 ## Endpoints
 
-| Method | Endpoint       | Description         |
-|--------|----------------|----------------------|
-| GET    | /api/tasks     | List all tasks       |
-| GET    | /api/tasks/:id | Get one task by id   |
-| POST   | /api/tasks     | Create a new task    |
-| PUT    | /api/tasks/:id | Update a task        |
-| DELETE | /api/tasks/:id | Delete a task        |
+All endpoints are prefixed with `/api`.
 
-## Database screenshot
+| Method | Endpoint          | Description                  |
+|--------|-------------------|-------------------------------|
+| GET    | `/api/tasks`      | List all tasks                |
+| GET    | `/api/tasks/:id`  | Get a single task by id        |
+| POST   | `/api/tasks`      | Create a new task              |
+| PUT    | `/api/tasks/:id`  | Update a task's title/done     |
+| DELETE | `/api/tasks/:id`  | Delete a task                   |
 
-![Database in DB Browser](./screenshots/db-browser.png)
+### Example request
 
-## Example SQL query (Stage 4)
+```bash
+curl -i http://localhost:3000/api/tasks
+```
 
-Ran in DB Browser's "Execute SQL" tab:
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
 
-    SELECT * FROM tasks WHERE done = 1;
+[{"id":1,"title":"Buy milk","done":false},{"id":2,"title":"Walk the dog","done":false},{"id":3,"title":"Finish assignment","done":false}]
+```
 
-## Persistence proof
+## Database
 
-1. Created a task via POST /api/tasks.
-2. Restarted the server.
-3. GET /api/tasks — the new task was still there.
+On first run, the app automatically creates the `tasks` table and seeds
+three example tasks (only if the table is empty — restarting the app never
+duplicates the seed data).
+
+### Verifying the data
+
+```bash
+docker exec -it taskdb psql -U postgres -d tasks -c "\dt"
+docker exec -it taskdb psql -U postgres -d tasks -c "SELECT * FROM tasks;"
+```
+
+![Database contents](./screenshots/db-postgres.png)
+
+## Persistence
+
+Task data survives a full stack restart, because it's stored in a Docker
+named volume (`taskdata`) rather than inside the container itself:
+
+```bash
+docker compose down
+docker compose up
+```
+
+Tasks created before `down` are still present after `up`.
+
+## Tech stack
+
+- Node.js + Express
+- PostgreSQL 16 (Docker)
+- Docker Compose
+- `pg` (node-postgres) driver

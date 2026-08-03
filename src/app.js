@@ -1,10 +1,8 @@
 const express = require('express');
 const routes = require('./routes/task.route');
 
-const app = express();  
-
+const app = express();
 app.use(express.json());
-
 app.use('/api', routes);
 
 module.exports = app;

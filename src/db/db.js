@@ -1,13 +1,26 @@
-const { DatabaseSync } = require('node:sqlite');
+require('dotenv').config();
+const { Pool } = require('pg');
 
-const db = new DatabaseSync('tasks.db');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS tasks (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    done BOOLEAN NOT NULL DEFAULT 0
-  )
-`);
+async function initDb() {
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id SERIAL PRIMARY KEY,
+      title TEXT NOT NULL,
+      done BOOLEAN NOT NULL DEFAULT false
+    );
+  `);
 
-module.exports = db;
+  const { rows } = await pool.query('SELECT COUNT(*) FROM tasks');
+  if (Number(rows[0].count) === 0) {
+    await pool.query(`
+      INSERT INTO tasks (title, done) VALUES
+      ('Buy milk', false),
+      ('Walk the dog', false),
+      ('Finish assignment', false);
+    `);
+  }
+}
+
+module.exports = { pool, initDb };

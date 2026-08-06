@@ -1,6 +1,8 @@
 const express = require('express');
 const supabase = require('../config/supabaseClient');
 const router = express.Router();
+const requireAuth = require('../middlewares/auth.middleware');
+
 
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;
@@ -24,5 +26,12 @@ router.post('/login', async (req, res) => {
     user: data.user
   });
 });
+
+router.post('/logout', requireAuth, async (req, res) => {
+  const { error } = await supabase.auth.signOut();
+  if (error) return res.status(400).json({ error: error.message });
+  res.status(204).send();
+});
+
 
 module.exports = router;

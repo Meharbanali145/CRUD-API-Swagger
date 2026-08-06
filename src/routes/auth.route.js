@@ -3,7 +3,29 @@ const supabase = require('../config/supabaseClient');
 const router = express.Router();
 const requireAuth = require('../middlewares/auth.middleware');
 
-
+/**
+ * @swagger
+ * /auth/signup:
+ *   post:
+ *     summary: Register a new user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created
+ *       400:
+ *         description: Missing fields or signup error
+ */
 router.post('/signup', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
@@ -13,6 +35,31 @@ router.post('/signup', async (req, res) => {
   res.status(201).json({ user: data.user });
 });
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Log in and receive access/refresh tokens
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Login successful, returns tokens
+ *       400:
+ *         description: Missing fields
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
@@ -27,6 +74,22 @@ router.post('/login', async (req, res) => {
   });
 });
 
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Log out the current user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         description: Successfully logged out
+ *       400:
+ *         description: Logout failed
+ *       401:
+ *         description: Missing or invalid token
+ */
 router.post('/logout', requireAuth, async (req, res) => {
   const { error } = await supabase.auth.signOut();
   if (error) return res.status(400).json({ error: error.message });
